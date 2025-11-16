@@ -49,7 +49,7 @@ class AnomalyAnalyzer:
         """
         return metrics["cpu_percent"] > cpu_threshold or metrics["memory_percent"] > mem_threshold
     
-    def analyze_anomaly(self, metrics: Dict) -> str:
+    def analyze_anomaly(self, metrics: Dict) -> Dict:
         """
         Przeanalizuj anomalię przy pomocy LLM
         
@@ -57,7 +57,7 @@ class AnomalyAnalyzer:
             metrics: Slownik z metrykami
             
         Returns:
-            Opis anomalii od modelu
+            Odpowiedź zwrócona przez Ollamę
         """
         prompt = f"""Przeanalizuj te metryki systemowe i zidentyfikuj potencjalne anomalie:
 
@@ -75,13 +75,34 @@ Odpowiedź powinna zawierać:
 
 Bądź zwięzły i konkretny."""
 
-        response = ollama.generate(
+        return ollama.generate(
             model=self.model,
             prompt=prompt,
             stream=False
         )
-        
-        return response['response']
+
+    @staticmethod
+    def print_llm_stats(response: Dict):
+        """Wyświetl statystyki użycia tokenów i czasu"""
+        prompt_tokens = response.get("prompt_eval_count")
+        completion_tokens = response.get("eval_count")
+        total_duration = response.get("total_duration")
+        eval_duration = response.get("eval_duration")
+        load_duration = response.get("load_duration")
+
+        print("\n📊 Statystyki analizy:")
+        if prompt_tokens is not None:
+            print(f"  Tokeny promptu: {prompt_tokens}")
+        if completion_tokens is not None:
+            print(f"  Tokeny odpowiedzi: {completion_tokens}")
+        if prompt_tokens is not None and completion_tokens is not None:
+            print(f"  Tokeny łącznie: {prompt_tokens + completion_tokens}")
+        if total_duration:
+            print(f"  Czas całkowity: {total_duration / 1e9:.2f}s")
+        if eval_duration:
+            print(f"  Czas generowania: {eval_duration / 1e9:.2f}s")
+        if load_duration:
+            print(f"  Czas ładowania modelu: {load_duration / 1e9:.2f}s")
     
     def monitor_continuous(self, duration_seconds: int = 60, interval_seconds: int = 10):
         """
@@ -113,8 +134,9 @@ Bądź zwięzły i konkretny."""
                 print("\n📊 Analiza LLM:")
                 print("-" * 60)
                 
-                analysis = self.analyze_anomaly(metrics)
-                print(analysis)
+                analysis_response = self.analyze_anomaly(metrics)
+                print(analysis_response['response'])
+                self.print_llm_stats(analysis_response)
                 
                 print("-" * 60 + "\n")
             else:

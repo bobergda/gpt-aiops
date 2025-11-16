@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # Pobranie ścieżki skryptu
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-VENV_DIR="$SCRIPT_DIR/venv"
+VENV_DIR="$SCRIPT_DIR/.venv"
 
 # Sprawdź Python
 echo "📍 Sprawdzam Python..."
@@ -73,7 +73,7 @@ echo ""
 
 # Sprawdź model qwen3:8b
 echo "📍 Sprawdzam model qwen3:8b..."
-if ! python3 -c "import ollama; models = [m['name'] for m in ollama.list()['models']]; exit(0 if 'qwen3:8b' in models else 1)" 2>/dev/null; then
+if ! ollama list | grep -q "qwen3:8b"; then
     echo -e "${YELLOW}⚠️  Model qwen3:8b nie znaleziony${NC}"
     echo "Pobieranie modelu (może potrwać kilka minut)..."
     ollama pull qwen3:8b
