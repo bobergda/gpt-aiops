@@ -77,35 +77,47 @@ Be concise and direct."""
     print("-" * 60)
     
     try:
-        response = ollama.generate(
+        stats = {
+            "prompt_tokens": None,
+            "completion_tokens": None,
+            "total_duration": None,
+            "eval_duration": None,
+            "load_duration": None,
+        }
+
+        # Stream the response token-by-token for immediate feedback
+        for chunk in ollama.generate(
             model="qwen3:8b",
             prompt=prompt,
-            stream=False,
+            stream=True,
             think=False,
-        )
-        print(response['response'])
+        ):
+            if chunk.get("response"):
+                print(chunk["response"], end="", flush=True)
 
-        prompt_tokens = response.get("prompt_eval_count")
-        completion_tokens = response.get("eval_count")
+            if chunk.get("done"):
+                stats["prompt_tokens"] = chunk.get("prompt_eval_count")
+                stats["completion_tokens"] = chunk.get("eval_count")
+                stats["total_duration"] = chunk.get("total_duration")
+                stats["eval_duration"] = chunk.get("eval_duration")
+                stats["load_duration"] = chunk.get("load_duration")
+
+        print()
 
         print("\n📈 Query statistics:")
-        if prompt_tokens is not None:
-            print(f"  Prompt tokens: {prompt_tokens}")
-        if completion_tokens is not None:
-            print(f"  Completion tokens: {completion_tokens}")
-        if prompt_tokens is not None and completion_tokens is not None:
-            print(f"  Total tokens: {prompt_tokens + completion_tokens}")
+        if stats["prompt_tokens"] is not None:
+            print(f"  Prompt tokens: {stats['prompt_tokens']}")
+        if stats["completion_tokens"] is not None:
+            print(f"  Completion tokens: {stats['completion_tokens']}")
+        if stats["prompt_tokens"] is not None and stats["completion_tokens"] is not None:
+            print(f"  Total tokens: {stats['prompt_tokens'] + stats['completion_tokens']}")
 
-        total_duration = response.get("total_duration")
-        eval_duration = response.get("eval_duration")
-        load_duration = response.get("load_duration")
-
-        if total_duration:
-            print(f"  Total time: {total_duration / 1e9:.2f}s")
-        if eval_duration:
-            print(f"  Generation time: {eval_duration / 1e9:.2f}s")
-        if load_duration:
-            print(f"  Model load time: {load_duration / 1e9:.2f}s")
+        if stats["total_duration"]:
+            print(f"  Total time: {stats['total_duration'] / 1e9:.2f}s")
+        if stats["eval_duration"]:
+            print(f"  Generation time: {stats['eval_duration'] / 1e9:.2f}s")
+        if stats["load_duration"]:
+            print(f"  Model load time: {stats['load_duration'] / 1e9:.2f}s")
     except Exception as e:
         print(f"❌ Error: {e}")
         print("Make sure Ollama is running: ollama run qwen3:8b")
