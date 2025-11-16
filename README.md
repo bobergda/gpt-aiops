@@ -1,147 +1,141 @@
-# AIOps - Analiza Anomalii z Qwen3:8b
+# AIOps - Anomaly Analysis with Qwen3:8b
 
-Analiza anomalii CPU/Memory w aplikacjach przy pomocy lokalnego modelu LLM (Qwen3:8b).
+CPU and memory anomaly detection for local workloads using the Qwen3:8b LLM.
 
-## Wymagania
+## Requirements
 
 - Python 3.8+
-- Ollama (zainstalowana i uruchomiona)
-- Model Qwen3:8b w Ollama
+- Ollama (installed and running)
+- Qwen3:8b model available in Ollama
 
-## Instalacja
+## Installation
 
-### 1. Zainstaluj Ollama
+### 1. Install Ollama
 
 ```bash
 curl https://ollama.ai/install.sh | sh
 ```
 
-### 2. Pobierz model Qwen3:8b
+### 2. Download the Qwen3:8b model
 
 ```bash
 ollama pull qwen3:8b
 ```
 
-### 3. Uruchom skrypt instalacyjny
+### 3. Run the setup script
 
-Skrypt `start.sh` automatycznie:
-- Sprawdzi wymagania
-- Utworzy wirtualne środowisko (venv)
-- Zainstaluje zależności Pythona
-- Uruchomi aplikację
-
-```bash
-./start.sh
-```
-
-## Uruchomienie
-
-### Opcja 1: Szybki start (REKOMENDOWANY)
+The `start.sh` script automatically:
+- Verifies prerequisites
+- Creates a virtual environment (venv)
+- Installs Python dependencies
+- Launches the app
 
 ```bash
 ./start.sh
 ```
 
-Skrypt automatycznie:
-- Sprawdzi wszystkie wymagania
-- Utworzy venv (jeśli nie istnieje)
-- Zainstaluje zależności
-- Wyświetli menu wyboru
+## Running
 
-### Opcja 2: Manualne uruchomienie
+### Option 1: Quick start (recommended)
 
 ```bash
-# Aktywuj venv
+./start.sh
+```
+
+The script will:
+- Validate requirements
+- Create the venv if needed
+- Install dependencies
+- Show the launcher menu
+
+### Option 2: Manual run
+
+```bash
+# Activate the venv
 source venv/bin/activate
 
-# Zainstaluj zależności
+# Install dependencies
 pip install -r requirements.txt
 
-# Uruchom
+# Launch
 python quick_analysis.py
 ```
 
-### Opcja 3: Szybka analiza (jeden pomiar)
+### Option 3: One-off quick analysis
 
 ```bash
 ./start.sh
-# Wybierz opcję 1
+# Choose option 1
 ```
 
-### Opcja 4: Ciągłe monitorowanie (60 sekund)
+### Option 4: Continuous monitoring (60 seconds)
 
 ```bash
 ./start.sh
-# Wybierz opcję 2
+# Choose option 2
 ```
 
-## Jak to działa
+## How It Works
 
-1. **Zbieranie metryk** - Pobiera CPU, pamięć, procesy itp. za pomocą `psutil`
-2. **Detekcja anomalii** - Sprawdza czy CPU > 80% lub pamięć > 85%
-3. **Analiza LLM** - Wysyła metryki do modelu Qwen2:8b
-4. **Opis anomalii** - Model zwraca tekstowy opis przyczyn i rekomendacji
+1. **Metric collection** – Gather CPU, memory, and process info via `psutil`.
+2. **Anomaly detection** – Flag readings when CPU > 80% or memory > 85%.
+3. **LLM analysis** – Send metrics to the Qwen3:8b model for context.
+4. **Explanation** – The model describes causes and recommended actions.
 
-## Personalizacja
+## Customization
 
-### Zmień progi anomalii
+### Adjust anomaly thresholds
 
 ```python
 analyzer.monitor_continuous(duration_seconds=120, interval_seconds=5)
-# oraz
+# and
 analyzer.is_anomaly(metrics, cpu_threshold=90, mem_threshold=90)
 ```
 
-### Zmień model
+### Switch models
 
 ```python
-analyzer = AnomalyAnalyzer(model="mistral")  # lub inny model
+analyzer = AnomalyAnalyzer(model="mistral")  # or another Ollama model
 ```
 
-## Struktura projektu
+## Project Structure
 
 ```
 aiops/
-├── anomaly_analyzer.py    # Główny skrypt monitorowania
-├── quick_analysis.py       # Szybka analiza
-├── requirements.txt        # Zależności
-└── README.md              # Ten plik
+├── anomaly_analyzer.py    # Continuous monitoring script
+├── quick_analysis.py      # Single-measurement analysis
+├── requirements.txt       # Python dependencies
+└── README.md              # This file
 ```
 
 ## Troubleshooting
 
 ### "Cannot connect to Ollama"
 ```bash
-# 2. Upewnij się, że Ollama działa z Qwen3:8b
 ollama run qwen3:8b
 ```
 
-### Model nie znaleziony
+### Model not found
 ```bash
-# Pobierz model:
-ollama pull qwen2:8b
-
-# Lista dostępnych modeli:
+ollama pull qwen3:8b
 ollama list
 ```
 
-### Wolne działanie
-- Zmniejsz `duration_seconds` lub zwiększ `interval_seconds`
-- Qwen3:8b powinien być szybki na większości maszyn
+### Slow performance
+- Lower `duration_seconds` or increase `interval_seconds`.
+- Qwen3:8b should run smoothly on most modern machines.
 
-## API Ollama
-
-Jeśli chcesz używać Ollama jako API bez tego skryptu:
+## Using the Ollama API Directly
 
 ```bash
 curl http://localhost:11434/api/generate -d '{
-  "model": "qwen2:8b",
-  "prompt": "Czym jest anomalia CPU?"
+  "model": "qwen3:8b",
+  "prompt": "What is a CPU anomaly?"
 }'
 ```
 
-## Notatki
+## Notes
 
-- Qwen3:8b to nowy model z ulepszoną obsługą języka i rozumowaniem
-- Model działa lokalnie, brak wysyłania danych na zewnątrz
-- Idealne dla działów AIOps / DevOps
+- Qwen3:8b offers improved language understanding and reasoning.
+- Everything runs locally; nothing is sent outside your environment.
+- Useful for AIOps and DevOps teams needing quick diagnostics.

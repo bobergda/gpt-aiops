@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Szybka analiza anomalii - pojedynczy pomiar i analiza LLM
+Quick anomaly analysis - single measurement and LLM assessment
 """
 
 import ollama
@@ -10,7 +10,7 @@ import time
 
 
 def get_top_processes(limit: int = 5) -> str:
-    """Pobierz top procesy zużywające CPU i pamięć"""
+    """Return the most demanding CPU and memory processes"""
     processes = []
     
     for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
@@ -19,10 +19,10 @@ def get_top_processes(limit: int = 5) -> str:
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
     
-    # Sortuj po CPU
+    # Sort by CPU usage first
     top_cpu = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)[:limit]
     
-    result = "Top procesy (CPU):\n"
+    result = "Top processes (CPU):\n"
     for proc in top_cpu:
         result += f"  - {proc['name']}: {proc['cpu_percent']:.1f}% CPU, {proc['memory_percent']:.1f}% MEM\n"
     
@@ -30,11 +30,11 @@ def get_top_processes(limit: int = 5) -> str:
 
 
 def quick_analyze():
-    """Szybka analiza bieżącego stanu systemu"""
+    """Quick analysis of the current system state"""
     
-    print("🤖 Szybka analiza anomalii\n")
+    print("🤖 Quick anomaly analysis\n")
     
-    # Zbierz metryki
+    # Gather metrics
     metrics = {
         "timestamp": datetime.now().isoformat(),
         "cpu_percent": psutil.cpu_percent(interval=1),
@@ -45,69 +45,70 @@ def quick_analyze():
         "processes_count": len(psutil.pids())
     }
     
-    print("📊 Metryki systemowe:")
+    print("📊 System metrics:")
     print(f"  CPU: {metrics['cpu_percent']:.1f}%")
     print(f"  Memory: {metrics['memory_percent']:.1f}% ({metrics['memory_used_gb']:.2f}GB / {metrics['memory_total_gb']:.2f}GB)")
-    print(f"  Procesy: {metrics['processes_count']}")
-    print(f"  Rdzenie CPU: {metrics['cpu_count']}")
-    print(f"  Czas: {metrics['timestamp']}\n")
+    print(f"  Processes: {metrics['processes_count']}")
+    print(f"  CPU cores: {metrics['cpu_count']}")
+    print(f"  Timestamp: {metrics['timestamp']}\n")
     
-    # Pobierz top procesy
+    # Fetch top processes
     top_processes = get_top_processes(limit=5)
     print("📈 " + top_processes)
     
-    # Przygotuj prompt
-    prompt = f"""Przeanalizuj te metryki systemowe i zidentyfikuj potencjalne anomalie:
+    # Build prompt
+    prompt = f"""Review these system metrics and identify any potential anomalies:
 
 CPU: {metrics['cpu_percent']:.1f}%
-Pamięć: {metrics['memory_percent']:.1f}% ({metrics['memory_used_gb']:.2f}GB / {metrics['memory_total_gb']:.2f}GB)
-Liczba procesów: {metrics['processes_count']}
-Liczba rdzeni CPU: {metrics['cpu_count']}
+Memory: {metrics['memory_percent']:.1f}% ({metrics['memory_used_gb']:.2f}GB / {metrics['memory_total_gb']:.2f}GB)
+Number of processes: {metrics['processes_count']}
+Number of CPU cores: {metrics['cpu_count']}
 
 {top_processes}
 
-Odpowiedź powinna zawierać:
-1. Czy to jest anomalia? (Tak/Nie)
-2. Jakie są przyczyny?
-3. Jakie działania podjąć?
+The response should include:
+1. Is this an anomaly? (Yes/No)
+2. What are the causes?
+3. What actions should be taken?
 
-Bądź zwięzły i konkretny."""
+Be concise and direct."""
 
-    print("🔍 Analiza LLM (Qwen3:8b):\n")
+    print("🔍 LLM analysis (Qwen3:8b):\n")
     print("-" * 60)
     
     try:
         response = ollama.generate(
             model="qwen3:8b",
             prompt=prompt,
-            stream=False
+            stream=False,
+            think=False,
         )
         print(response['response'])
 
         prompt_tokens = response.get("prompt_eval_count")
         completion_tokens = response.get("eval_count")
 
-        print("\n📈 Statystyki zapytania:")
+        print("\n📈 Query statistics:")
         if prompt_tokens is not None:
-            print(f"  Tokeny promptu: {prompt_tokens}")
+            print(f"  Prompt tokens: {prompt_tokens}")
         if completion_tokens is not None:
-            print(f"  Tokeny odpowiedzi: {completion_tokens}")
+            print(f"  Completion tokens: {completion_tokens}")
         if prompt_tokens is not None and completion_tokens is not None:
-            print(f"  Tokeny łącznie: {prompt_tokens + completion_tokens}")
+            print(f"  Total tokens: {prompt_tokens + completion_tokens}")
 
         total_duration = response.get("total_duration")
         eval_duration = response.get("eval_duration")
         load_duration = response.get("load_duration")
 
         if total_duration:
-            print(f"  Czas całkowity: {total_duration / 1e9:.2f}s")
+            print(f"  Total time: {total_duration / 1e9:.2f}s")
         if eval_duration:
-            print(f"  Czas generowania: {eval_duration / 1e9:.2f}s")
+            print(f"  Generation time: {eval_duration / 1e9:.2f}s")
         if load_duration:
-            print(f"  Czas ładowania modelu: {load_duration / 1e9:.2f}s")
+            print(f"  Model load time: {load_duration / 1e9:.2f}s")
     except Exception as e:
-        print(f"❌ Błąd: {e}")
-        print("Upewnij się, że Ollama jest uruchomiona: ollama run qwen3:8b")
+        print(f"❌ Error: {e}")
+        print("Make sure Ollama is running: ollama run qwen3:8b")
     
     print("-" * 60)
 
