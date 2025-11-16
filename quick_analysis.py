@@ -55,7 +55,7 @@ def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING):
     print(f"  Timestamp: {metrics['timestamp']}\n")
     
     # Fetch top processes
-    top_processes = get_top_processes(limit=5)
+    top_processes = get_top_processes(limit=10)
     print("📈 " + top_processes)
     
     # Build prompt
