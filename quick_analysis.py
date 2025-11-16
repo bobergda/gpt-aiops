@@ -8,6 +8,8 @@ import psutil
 from datetime import datetime
 import time
 
+DEFAULT_SHOW_THINKING = False
+
 
 def get_top_processes(limit: int = 5) -> str:
     """Return the most demanding CPU and memory processes"""
@@ -29,7 +31,7 @@ def get_top_processes(limit: int = 5) -> str:
     return result
 
 
-def quick_analyze():
+def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING):
     """Quick analysis of the current system state"""
     
     print("🤖 Quick anomaly analysis\n")
@@ -85,13 +87,34 @@ Be concise and direct."""
             "load_duration": None,
         }
 
+        in_thinking = False  # track when the model is exposing its thought process
+
+        generate_args = {
+            "model": "qwen3:8b",
+            "prompt": prompt,
+            "stream": True,
+            "think": show_thinking
+        }
+
         # Stream the response token-by-token for immediate feedback
-        for chunk in ollama.generate(
-            model="qwen3:8b",
-            prompt=prompt,
-            stream=True,
-            think=False,
-        ):
+        for chunk in ollama.generate(**generate_args):
+            if show_thinking:
+                thinking_text = (
+                    chunk.get("thinking")
+                    or chunk.get("message", {}).get("thinking")
+                )
+
+                if thinking_text:
+                    if not in_thinking:
+                        print("\n🧠 Model thinking...\n")
+                        in_thinking = True
+                    print(thinking_text, end="", flush=True)
+                    continue
+
+                if in_thinking and chunk.get("response"):
+                    print("\n")
+                    in_thinking = False
+
             if chunk.get("response"):
                 print(chunk["response"], end="", flush=True)
 
@@ -101,6 +124,9 @@ Be concise and direct."""
                 stats["total_duration"] = chunk.get("total_duration")
                 stats["eval_duration"] = chunk.get("eval_duration")
                 stats["load_duration"] = chunk.get("load_duration")
+
+        if in_thinking:
+            print("\n")
 
         print()
 
@@ -126,4 +152,4 @@ Be concise and direct."""
 
 
 if __name__ == "__main__":
-    quick_analyze()
+    quick_analyze(show_thinking=DEFAULT_SHOW_THINKING)
