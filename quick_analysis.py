@@ -3,31 +3,50 @@
 Quick anomaly analysis - single measurement and LLM assessment
 """
 
-import ollama
-import psutil
 from datetime import datetime
 import time
 import sys
 
+import ollama
+import psutil
+
 DEFAULT_SHOW_THINKING = False
 DEFAULT_EGG = True
 
-def get_top_processes(limit: int = 5) -> str:
-    """Return the most demanding CPU and memory processes"""
+def gather_process_stats(limit: int | None = None, sample_delay: float = 1.0):
+    """Sample processes and return (pid, name, cpu%, mem%) tuples sorted by CPU."""
     processes = []
-    
-    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+    for proc in psutil.process_iter(["pid", "name"]):
         try:
-            processes.append(proc.info)
+            proc.cpu_percent(None)  # prime baseline
+            processes.append(proc)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-    
-    # Sort by CPU usage first
-    top_cpu = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)[:limit]
-    
+            continue
+
+    time.sleep(sample_delay)
+
+    stats = []
+    for proc in processes:
+        try:
+            cpu = proc.cpu_percent(None)
+            mem = proc.memory_percent()
+            cmdline = " ".join(proc.cmdline()) if proc.cmdline() else ""
+            stats.append((proc.info["pid"], proc.info["name"], cpu, mem, cmdline))
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    stats.sort(key=lambda item: item[2], reverse=True)
+    return stats[:limit] if limit is not None else stats
+
+def get_top_processes(limit: int = 10) -> str:
+    """Return the most demanding CPU and memory processes"""
+    top_cpu = gather_process_stats(limit=limit)
+
     result = "Top processes (CPU):\n"
-    for proc in top_cpu:
-        result += f"  - {proc['name']}: {proc['cpu_percent']:.1f}% CPU, {proc['memory_percent']:.1f}% MEM\n"
+    print("📈 Top processes (CPU):")
+    for pid, name, cpu, mem, cmdline in top_cpu:
+        result += f"  - {name}: {cpu:.1f}% CPU, {mem:.1f}% MEM\n"
+        print(f"  {pid:>6} {name:<25}: {cpu:.1f}% CPU, {mem:.1f}% MEM")
     
     return result
 
@@ -57,7 +76,6 @@ def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING, egg: bool = False
     
     # Fetch top processes
     top_processes = get_top_processes(limit=10)
-    print("📈 " + top_processes)
     
     # Build prompt
     if not egg:
