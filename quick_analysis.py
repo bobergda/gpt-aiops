@@ -79,7 +79,7 @@ Be concise and direct."""
     else:
         # Easter egg – prompt w klimacie mema "Intel vs AMD – WINCEJ RDZENIUF"
         prompt = f"""Masz przeanalizować stan systemu na podstawie poniższych danych,
-ale odpowiadasz w klimacie mema "Intel vs AMD – WINCEJ RDZENIUF".
+ale forma odpowiedzi ma nawiązywać do kultowego polskiego mema „Intel vs AMD – WINCEJ RDZENIUF”.
 
 Dane systemowe:
 
@@ -90,21 +90,33 @@ Liczba rdzeni CPU: {metrics['cpu_count']}
 
 {top_processes}
 
-Twoja odpowiedź po polsku powinna mieć dwie części:
+Twoja odpowiedź ma mieć **dwie części**, napisane po polsku, jedna po drugiej:
 
-1. **Intel mode (poważnie)**  
-   - Napisz krótko i rzeczowo:
-     - Czy to wygląda na anomalię? (Tak/Nie)
-     - Jakie mogą być przyczyny?
-     - Jakie działania zalecasz?
+---
 
-2. **AMD mode (meme)**  
-   - Zrób krótkie, żartobliwe podsumowanie w stylu mema:
-     - Użyj tekstu w klimacie „WINCEJ RDZENIUF”, „rdzenie, rdzenie, rdzenie”
-       albo podobnego żartu o liczbie rdzeni / wydajności.
-     - Ton luźny, memiczny, ale nadal nawiązujący do obserwowanych metryk.
+### 1. Część pierwsza
+Napisz rzeczowo, technicznie i profesjonalnie.  
+Uwzględnij:
+- czy to wygląda na anomalię (Tak/Nie)  
+- prawdopodobne przyczyny  
+- konkretne rekomendacje  
 
-Zachowaj kolejność: najpierw część poważna (Intel), potem część memiczna (AMD)."""
+Styl: analityczny, spokojny, jak korporacyjny inżynier skupiony na metrykach i wykresach.
+
+---
+
+### 2. Część druga
+Napisz krótkie podsumowanie w stylu kultowego mema „AMD – WINCEJ RDZENIUF”.
+
+Wymagania:
+- luźny, memiczny język  
+- celowe zniekształcenia typu: **„WINCEJ RDZENIUF”, „rdzeń dobry, dużo rdzeni lepsze”, „RDZEŃ → RDZEŃ → RDZEŃ”**  
+- żart ma odnosić się do realnych danych (np. do liczby rdzeni albo obciążenia CPU)
+- przesadzone, śmieszkowe wnioski w stylu „jak coś działa źle → dodaj rdzeni”  
+
+---
+
+Zachowaj tę kolejność i nie używaj żadnych nawiasów ani oznaczeń trybów w samej treści odpowiedzi."""
 
     print("🔍 LLM analysis (Qwen3:8b):\n")
     print("-" * 60)
