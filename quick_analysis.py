@@ -7,9 +7,10 @@ import ollama
 import psutil
 from datetime import datetime
 import time
+import sys
 
 DEFAULT_SHOW_THINKING = False
-
+DEFAULT_EGG = True
 
 def get_top_processes(limit: int = 5) -> str:
     """Return the most demanding CPU and memory processes"""
@@ -31,7 +32,7 @@ def get_top_processes(limit: int = 5) -> str:
     return result
 
 
-def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING):
+def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING, egg: bool = False):
     """Quick analysis of the current system state"""
     
     print("🤖 Quick anomaly analysis\n")
@@ -59,7 +60,8 @@ def quick_analyze(show_thinking: bool = DEFAULT_SHOW_THINKING):
     print("📈 " + top_processes)
     
     # Build prompt
-    prompt = f"""Review these system metrics and identify any potential anomalies:
+    if not egg:
+        prompt = f"""Review these system metrics and identify any potential anomalies:
 
 CPU: {metrics['cpu_percent']:.1f}%
 Memory: {metrics['memory_percent']:.1f}% ({metrics['memory_used_gb']:.2f}GB / {metrics['memory_total_gb']:.2f}GB)
@@ -74,6 +76,35 @@ The response should include:
 3. What actions should be taken?
 
 Be concise and direct."""
+    else:
+        # Easter egg – prompt w klimacie mema "Intel vs AMD – WINCEJ RDZENIUF"
+        prompt = f"""Masz przeanalizować stan systemu na podstawie poniższych danych,
+ale odpowiadasz w klimacie mema "Intel vs AMD – WINCEJ RDZENIUF".
+
+Dane systemowe:
+
+CPU: {metrics['cpu_percent']:.1f}%
+Pamięć: {metrics['memory_percent']:.1f}% ({metrics['memory_used_gb']:.2f}GB / {metrics['memory_total_gb']:.2f}GB)
+Liczba procesów: {metrics['processes_count']}
+Liczba rdzeni CPU: {metrics['cpu_count']}
+
+{top_processes}
+
+Twoja odpowiedź po polsku powinna mieć dwie części:
+
+1. **Intel mode (poważnie)**  
+   - Napisz krótko i rzeczowo:
+     - Czy to wygląda na anomalię? (Tak/Nie)
+     - Jakie mogą być przyczyny?
+     - Jakie działania zalecasz?
+
+2. **AMD mode (meme)**  
+   - Zrób krótkie, żartobliwe podsumowanie w stylu mema:
+     - Użyj tekstu w klimacie „WINCEJ RDZENIUF”, „rdzenie, rdzenie, rdzenie”
+       albo podobnego żartu o liczbie rdzeni / wydajności.
+     - Ton luźny, memiczny, ale nadal nawiązujący do obserwowanych metryk.
+
+Zachowaj kolejność: najpierw część poważna (Intel), potem część memiczna (AMD)."""
 
     print("🔍 LLM analysis (Qwen3:8b):\n")
     print("-" * 60)
@@ -152,4 +183,4 @@ Be concise and direct."""
 
 
 if __name__ == "__main__":
-    quick_analyze(show_thinking=DEFAULT_SHOW_THINKING)
+    quick_analyze(show_thinking=DEFAULT_SHOW_THINKING, egg=DEFAULT_EGG)
