@@ -14,4 +14,7 @@ OUT="ollama-base-full-$(date +%Y%m%d-%H%M%S).tar.gz"
 echo "➡️ Tworzę archiwum: $OUT"
 sudo tar -cvpzf "$OUT" -C "$(dirname "$BASE")" "$(basename "$BASE")"
 
-echo "✅ Gotowe: $OUT"
+sudo chown "$USER":"$USER" "$OUT"
+
+echo "✅ Gotowe:"
+ls -lh "$OUT"
