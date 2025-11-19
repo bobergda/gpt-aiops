@@ -17,7 +17,7 @@ fi
 sudo mkdir -p /usr/share/ollama
 
 echo "➡️  Rozpakowuję modele do /usr/share/ollama..."
-sudo tar -xvzf "$BACKUP" -C /usr/share/ollama
+sudo tar -xvzf "$BACKUP" -C /usr/share/ollama/.ollama
 
 echo "➡️  Ustawiam właściciela na użytkownika ollama..."
 sudo chown -R ollama:ollama /usr/share/ollama/.ollama
