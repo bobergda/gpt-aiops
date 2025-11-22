@@ -27,7 +27,9 @@ Thumbs.db
 
 # Logs
 *.log
-tmp.py
 
 # Archives
-ollama-*tar.gz
+*.tar.gz
+
+# Code Generation
+/code-gen/
